@@ -12,13 +12,17 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import myinterface.ConfirmPayment;
+import myinterface.InputValidator;
+import myinterface.LengthValidator;
+import myinterface.NavigationInterface;
+import myinterface.PaymentProcessorInterface;
 
 /**
  * The BkashPayment class represents a JFrame window for Bkash payment functionality. It implements
  * the ActionListener interface and uses the ConfirmPayment interface for confirming payments.
  */
-public class BkashPayment extends JFrame implements ActionListener, ConfirmPayment {
+public class BkashPayment extends JFrame implements ActionListener, InputValidator, LengthValidator {
+
 
   final JLabel bkash_lbl; // Label to display Bkash logo
   final JTextField num_fld; // Text field for entering the mobile number
@@ -26,10 +30,15 @@ public class BkashPayment extends JFrame implements ActionListener, ConfirmPayme
   final JButton next_btn; // Button for proceeding to the next step
   final JPasswordField pass_fld; // Password field for entering the PIN
 
+  private final PaymentProcessorInterface paymentProcessor; // Dependency injection for payment processing
+  private final NavigationInterface navigation;
   /**
    * The constructor of the BkashPayment class. It initializes the JFrame and adds components to it.
    */
-  BkashPayment() {
+  public BkashPayment(PaymentProcessorInterface paymentProcessor, NavigationInterface navigation) {
+    this.paymentProcessor = paymentProcessor;
+    this.navigation = navigation;
+
     System.out.println("Currently in BkashPayment class");
     // Set JFrame properties
     setTitle("Bkash Payment");
@@ -93,61 +102,21 @@ public class BkashPayment extends JFrame implements ActionListener, ConfirmPayme
    * @param ae The ActionEvent that occurred.
    */
   public void actionPerformed(ActionEvent ae) {
-    // Get input values
-    String MobileNumber = num_fld.getText();
-    String Pin = String.valueOf(pass_fld.getPassword());
+        String MobileNumber = num_fld.getText();
+        String Pin = String.valueOf(pass_fld.getPassword());
 
-    if (ae.getSource() == back_btn) {
-      // Navigate back to Payment page
-      new Payment();
-      this.setVisible(false);
-      System.out.println("Exited from BkashPayment class");
-    } else if (ae.getSource() == next_btn) {
-      // Check if MobileNumber and Pin are empty
-      boolean isMobileNumberEmpty = MobileNumber.isEmpty();
-      boolean isPinEmpty = Pin.isEmpty();
-      // Call confirmPayment method with input values and current instance
-      confirmPayment(isMobileNumberEmpty, isPinEmpty, this, num_fld, pass_fld);
-    }
-  }
-
-  /**
-   * This method confirms the payment for a hotel stay. It is implemented from the ConfirmPayment
-   * interface.
-   *
-   * @param isMobileNumberEmpty true if the mobile number is empty, false otherwise
-   * @param isPinEmpty true if the PIN is empty, false otherwise
-   * @param paymentFrame the JFrame object representing the payment frame
-   * @param number the number field representing the mobile number
-   * @param password the password field representing the PIN
-   */
-  @Override
-  public void confirmPayment(
-      boolean isMobileNumberEmpty,
-      boolean isPinEmpty,
-      JFrame paymentFrame,
-      JTextField number,
-      JPasswordField password) {
-    System.out.println("confirmPayment function called");
-    if (isMobileNumberEmpty) {
-      JOptionPane.showMessageDialog(null, "Invalid Phone number ");
-      System.out.println("Number field is empty");
-    } else {
-      if (isPinEmpty) {
-        JOptionPane.showMessageDialog(null, "Invalid  Pin");
-        System.out.println("Pin number is invalid");
-      } else {
-        if (inputValidation(number, password) && inputLength(number, password)) {
-          JOptionPane.showMessageDialog(null, "Payment Confirmed\nThank You For Staying At Tipton");
-          System.out.println("Payment Done Successfully");
-          new UDashBoard();
-          paymentFrame.setVisible(false);
-          System.out.println("Exited from BkashPayment class");
+        if (ae.getSource() == back_btn) {
+            navigation.navigateBack();
+            this.setVisible(false);
+            System.out.println("Exited from BkashPayment class");
+        } else if (ae.getSource() == next_btn) {
+            // Call confirmPayment from PaymentProcessor
+            paymentProcessor.confirmPayment(num_fld, pass_fld, this);
         }
-      }
     }
-    System.out.println("confirmPayment funtion executed successfully");
-  }
+
+
+
 
   /**
    * This method validates if the input values in the number and password fields consist only of
@@ -159,51 +128,42 @@ public class BkashPayment extends JFrame implements ActionListener, ConfirmPayme
    */
   @Override
   public boolean inputValidation(JTextField number, JPasswordField password) {
-    System.out.println("inputValidation funtion called");
-    boolean n = true;
-    boolean p = true;
+    System.out.println("inputValidation function called");
+    
     String numberText = number.getText();
-    for (int i = 0; i < numberText.length(); i++) {
-      char c = numberText.charAt(i);
-      if (!Character.isDigit(c)) {
-        n = false;
-        break;
-      }
-    }
-
     String passText = String.valueOf(password.getPassword());
-    for (int i = 0; i < passText.length(); i++) {
-      char c = passText.charAt(i);
-      if (!Character.isDigit(c)) {
-        p = false;
-        break;
-      }
-    }
-    if (!n && !p) {
+
+    // Check if both number and password consist of digits only
+    boolean isNumberValid = numberText.chars().allMatch(Character::isDigit);
+    boolean isPasswordValid = passText.chars().allMatch(Character::isDigit);
+
+    if (!isNumberValid && !isPasswordValid) {
       JOptionPane.showMessageDialog(
           null,
-          "Phone number and Pin number cannot contain characters",
+          "Phone number and PIN number cannot contain characters",
           "Input error",
           JOptionPane.WARNING_MESSAGE);
       return false;
-    } else if (!n) {
+    } else if (!isNumberValid) {
       JOptionPane.showMessageDialog(
           null,
           "Phone Number cannot contain characters",
           "Phone number error",
           JOptionPane.WARNING_MESSAGE);
       return false;
-    } else if (!p) {
+    } else if (!isPasswordValid) {
       JOptionPane.showMessageDialog(
           null,
-          "Pin number cannot contain characters",
-          "Pin number error",
+          "PIN number cannot contain characters",
+          "PIN number error",
           JOptionPane.WARNING_MESSAGE);
       return false;
     }
-    System.out.println("inputValtidation funtion executed successfully");
+    System.out.println("inputValidation function executed successfully");
     return true;
   }
+  
+
 
   /**
    * This method checks the length of the input values in the number and password fields. It is

@@ -1,13 +1,10 @@
 package myinterface;
 
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import myclasses.UDashBoard;
 
 public interface ConfirmPayment {
-
   /**
    * Confirms the payment for a hotel stay.
    *
@@ -17,6 +14,10 @@ public interface ConfirmPayment {
    * @param number number represent the Number Field
    * @param password password represent the Password Field
    */
+  void confirmPayment(boolean isMobileNumberEmpty, boolean isPinEmpty, JFrame paymentFrame, JTextField number, JPasswordField password);
+
+
+  /* 
   default void confirmPayment(
       boolean isMobileNumberEmpty,
       boolean isPinEmpty,
@@ -40,6 +41,7 @@ public interface ConfirmPayment {
     System.out.println("confirmPayment function ran successfully");
   }
 
+  
   // Check if the input consist any character in number and password field
   default boolean inputValidation(JTextField number, JPasswordField password) {
     System.out.println("inputValidation function called");
@@ -89,6 +91,8 @@ public interface ConfirmPayment {
     return true;
   }
 
+  
+  
   // Check if the phonenumber length is 11 and password length is 4
   default boolean inputLength(JTextField number, JPasswordField password) {
     System.out.println("inputLength function called");
@@ -122,4 +126,5 @@ public interface ConfirmPayment {
     System.out.println("inputLength funtion executed successfully");
     return true;
   }
-}
+  */
+  }

@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -26,6 +27,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import myclasses.fileManager.Room;
+import myclasses.fileManager.RoomFileManager;
 
 public class ManageRoom extends JFrame implements ActionListener {
   // TODO Table data edit and table shift
@@ -39,8 +42,28 @@ public class ManageRoom extends JFrame implements ActionListener {
   private final JButton del_btn;
   private final JComboBox<String> roomType_box;
   private final JComboBox<String> bed_box;
+  private RoomFileManager roomFileManager;
+  private DefaultTableModel model;
+
+  public void loadRoomsToTable() {
+        // Cargar habitaciones desde el archivo
+        List<Room> rooms = roomFileManager.loadRooms();
+
+        // Limpiar las filas existentes en la tabla
+        model.setRowCount(0);
+
+        // Añadir las habitaciones al JTable
+        for (Room room : rooms) {
+            String[] rowData = new String[3];
+            rowData[0] = room.getRoomNumber();
+            rowData[1] = room.getRoomType();
+            rowData[2] = String.valueOf(room.getPrice());
+            model.addRow(rowData);
+        }
+    }
 
   public ManageRoom() {
+    roomFileManager = new RoomFileManager();
     System.out.println("Currently in ManageRoom class");
     setResizable(false);
     setTitle("Admin manage room");

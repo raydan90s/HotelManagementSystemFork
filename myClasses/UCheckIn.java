@@ -494,4 +494,9 @@ public class UCheckIn extends ShowRoom implements ActionListener, myinterface.Wr
       }
     }
   }
+
+  @Override
+  public boolean CheckRoomAvailability(String roomType, String bedType){
+    return true;
+  }
 }
